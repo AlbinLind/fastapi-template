@@ -1,0 +1,108 @@
+[tool.poetry]
+name = "fastapitemplate"
+version = "0.1.0"
+description = "A template I can use to get up and going quickly with a FastAPI project."
+authors = ["Albin Lindqvist <albin.lindqvist@hotmail.se>"]
+license = "MIT"
+readme = "README.md"
+packages = [{ include = "src", from = "." }]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = { extras = ["all"], version = "^0.104.0" }
+pydantic-settings = "^2.0.3"
+toml = "^0.10.2"
+pydantic = "^2.4.2"
+loguru = "^0.7.2"
+sqlalchemy = "^2.0.22"
+alembic = "^1.12.1"
+uvicorn = "^0.23.2"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.1.3"
+coverage = "^7.3.2"
+pytest = "^7.4.3"
+
+[tool.poetry.scripts]
+api = "scripts.run_scripts:run_backend"
+backend = "scripts.run_scripts:run_backend"
+migrate = "scripts.migrate_script:migrate"
+format = "scripts.format_scripts:lint"
+lint = "scripts.format_scripts:lint"
+cov = "scripts.test_scripts:run_tests"
+test = "scripts.test_scripts:run_tests"
+github_coverage = "scripts.test_scripts:github_coverage"
+
+
+[tool.coverage.run]
+dynamic_context = "test_function"
+
+[tool.coverage.html]
+show_contexts = true
+
+[tool.coverage.xml]
+output = "./tests/coverage/coverage.xml"
+
+[tool.ruff]
+line-length = 100
+select = [
+    "F",
+    "E",
+    "W",
+    "I",
+    "N",
+    "D",
+    "UP",
+    "ANN",
+    "B",
+    "A",
+    "COM",
+    "C4",
+    "ICN",
+    "PIE",
+    "T20",
+    "PT",
+    "Q",
+    "RET",
+    "SIM",
+    "TID",
+    "PD",
+    "PL",
+    "PERF",
+    "FURB",
+    "RUF",
+]
+ignore = [
+    "D401",
+    "D203",
+    "D213",
+    "D205",
+    "D400",
+    "ANN101",
+    "ANN401",
+    "B008",
+    "SIM222",
+    "RUF100",
+    "PLR6301",
+    "PLR0913",
+    "ANN102",
+    "COM812",
+]
+unfixable = ["F401"]
+
+
+[tool.ruff.pydocstyle]
+convention = "google"
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+"**/conftest.py" = ["E402"]
+"**/tests/**" = ["ANN201", "ANN202"]
+"**/alembic/**" = ["D415"]
+"**/database.py" = ["A003", "PLW3201", "N805"]
+"**/models.py" = ["A003", "F401"]
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

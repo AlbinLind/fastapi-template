@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../docker/Dockerfile.backend
+    ports:
+     - "8000:8000"
+    environment:
+      - ENVIRONMENT=production # set to development to enable debug mode
+      - LOG_LEVEL=INFO # Set the general log level, more fine grained can also be set
+      - LOG_FILE=/app/logs/backend.log # path to log file, make sure to also mount the folder
+    command: "poetry run uvicorn src.main:app --host 0.0.0.0 --port 8000"
+    restart: unless-stopped

@@ -1,0 +1,17 @@
+FROM python:3.10-buster
+
+WORKDIR /app
+
+ENV POETRY_VIRTUALENVS_IN_PROJECT=true \
+    POETRY_VIRUTALENVS_CREATE=true \
+    POETRY_CACHE_DIR=/tmp/poetry_cache
+
+RUN pip install "poetry==1.6.1"
+
+COPY poetry.lock pyproject.toml README.md /app/
+
+COPY src/__init__.py /app/src/__init__.py
+
+RUN poetry install --no-interaction --no-ansi
+
+COPY . /app/
