@@ -2,7 +2,7 @@
 from typing import Generator, TypeVar
 
 from loguru import logger
-from sqlalchemy import Result, Insert, Select, Update, create_engine
+from sqlalchemy import Insert, Result, Select, Update, create_engine
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, as_declarative, sessionmaker
 
@@ -43,7 +43,7 @@ class Database:
         logger.debug("Connecting to database at {}", self.database_url)
         self.engine = create_engine(self.database_url)
         self.db = next(self._get_db())
-        
+
     def _get_db(self) -> Generator[Session, None, None]:
         """Get a database session.
 
@@ -65,12 +65,11 @@ class Database:
 
         Returns:
             Model | None: object of the model or none if no row is found
-        """   
-
+        """
         logger.debug("Executing query {} for one object", query)
         result: Result = self.db.execute(query).first()
         self.db.commit()
-        
+
         return result[0]
 
     def fetch_all(self, query: Select | Insert | Update) -> list[Model] | None:
