@@ -13,16 +13,16 @@ class Environment(Enum):
     TESTING = "testing"
 
     @property
-    def is_debug(self) -> bool:
+    def is_debug(self) -> bool:  # pragma: no cover
         """Whether or not the environment is in debug mode."""
         return self in {Environment.LOCAL, Environment.TESTING}
 
     @property
-    def is_testing(self) -> bool:
+    def is_testing(self) -> bool:  # pragma: no cover
         """Whether or not the environment is in testing mode."""
         return self == Environment.TESTING
 
     @property
-    def is_production(self) -> bool:
+    def is_production(self) -> bool:  # pragma: no cover
         """Whether or not the environment is in production mode."""
         return self == Environment.PRODUCTION

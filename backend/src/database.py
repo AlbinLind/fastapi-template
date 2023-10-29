@@ -2,7 +2,7 @@
 from typing import Generator, TypeVar
 
 from loguru import logger
-from sqlalchemy import CursorResult, Insert, Select, Update, create_engine
+from sqlalchemy import Insert, Result, Select, Update, create_engine
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, as_declarative, sessionmaker
 
@@ -42,15 +42,16 @@ class Database:
         self.database_url = database_url
         logger.debug("Connecting to database at {}", self.database_url)
         self.engine = create_engine(self.database_url)
-        self.session_local = sessionmaker(autocommit=False, bind=self.engine)
+        self.db = next(self._get_db())
 
-    def get_db(self) -> Generator[Session, None, None]:
+    def _get_db(self) -> Generator[Session, None, None]:
         """Get a database session.
 
         Yields:
             Generator[Session, None, None]: Database session
         """
-        db = self.session_local()
+        db = sessionmaker(self.engine)()
+        logger.info("Created a session, you should not see this after initialisation.")
         try:
             yield db
         finally:
@@ -65,18 +66,11 @@ class Database:
         Returns:
             Model | None: object of the model or none if no row is found
         """
-        db = self.session_local()
-
         logger.debug("Executing query {} for one object", query)
-        cursor: CursorResult = db.execute(query)
-        db.commit()
+        result: Result = self.db.execute(query).first()
+        self.db.commit()
 
-        if cursor.rowcount == 0:
-            logger.info("No row found for query {}", query)
-            return None
-
-        logger.debug("Found row {} for query, returning first", cursor.rowcount)
-        return cursor.first()
+        return result[0]
 
     def fetch_all(self, query: Select | Insert | Update) -> list[Model] | None:
         """Fetches all the rows from the database.
@@ -87,18 +81,12 @@ class Database:
         Returns:
             list[Model] | None: list of objects of the model or none if no row is found
         """
-        db = self.session_local()
-
         logger.debug("Executing query {} for all objects", query)
-        cursor: CursorResult = db.execute(query)
+        result: Result = self.db.execute(query).all()
+        self.db.commit()
 
-        db.commit()
-        if cursor.rowcount == 0:
-            logger.info("No row found for query {}", query)
-            return None
-
-        logger.debug("Found rows {} for query, returning all", cursor.rowcount)
-        return cursor.all()
+        # The result is a sequenced tuple like object, but we only want the first part of the tuple
+        return [res[0] for res in result]
 
     def execute(self, query: Insert | Update) -> None:
         """Executes the query, but does not fetch any rows.
@@ -106,33 +94,24 @@ class Database:
         Args:
             query (Insert | Update): query to execute
         """
-        db = self.session_local()
+        logger.debug("Executing query {}", query)
+        self.db.execute(query)
+        self.db.commit()
 
-        db.execute(query)
-        db.commit()
-
-    def add(self, model_list: Model | list[Model]) -> list[Model]:
+    def add(self, model_list: Model | list[Model]) -> None:
         """Add one or more objects to the database.
 
         Args:
             model_list (Model | list[Model]): object or list of objects to add
-
-        Returns:
-            list[Model]: list of objects that were added, note that even if a single object
-            is added, it will be returned as a list.
         """
         # If we get a single model, convert it to a list
         if not isinstance(model_list, list):
             logger.debug("Converting single model to list")
             model_list = [model_list]
 
-        db = self.session_local()
-
         logger.info("Adding {} objects to database", len(model_list))
-        db.add_all(model_list)
-        db.commit()
-        db.refresh(model_list)
-        return model_list
+        self.db.add_all(model_list)
+        self.db.commit()
 
 
 database = Database()

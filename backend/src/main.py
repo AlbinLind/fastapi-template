@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.config.config import app_configs
 from src.config.logging import setup_logging
+from src.user.router import router
 
 
 def start_backend() -> FastAPI:
@@ -19,6 +20,8 @@ def start_backend() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    start_app.include_router(router, prefix="/users")
 
     return start_app
 
