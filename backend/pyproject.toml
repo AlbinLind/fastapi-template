@@ -102,6 +102,9 @@ convention = "google"
 "**/database.py" = ["A003", "PLW3201", "N805"]
 "**/models.py" = ["A003", "F401"]
 
+[tool.ruff.flake8-builtins]
+builtins-ignorelist = ["id"]
+
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,6 +1,6 @@
 """Api endpoints for the User object."""
 from fastapi import APIRouter
-from sqlalchemy import select, text
+from sqlalchemy import select
 
 from src.database import database
 from src.models import User
