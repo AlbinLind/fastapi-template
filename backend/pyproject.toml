@@ -97,7 +97,7 @@ convention = "google"
 [tool.ruff.per-file-ignores]
 "__init__.py" = ["F401"]
 "**/conftest.py" = ["E402"]
-"**/tests/**" = ["ANN201", "ANN202"]
+"**/tests/**" = ["ANN201", "ANN202", "PLR2004"]
 "**/alembic/**" = ["D415"]
 "**/database.py" = ["A003", "PLW3201", "N805"]
 "**/models.py" = ["A003", "F401"]

@@ -9,31 +9,32 @@ from sqlalchemy import create_engine
 os.environ["PROJECT_ENVIRONEMNT"] = "testing"
 os.environ["LOG_FILE"] = str(Path(__file__).parent / "logs" / "test.log")
 
-from typing import Generator    
-from alembic.config import Config
-from alembic import command
+from typing import Generator
 
 import pytest
 from fastapi.testclient import TestClient
 from loguru import logger
 
+from alembic import command
+from alembic.config import Config
+
 
 @pytest.fixture(autouse=True, scope="session")
 def _setup_db(tmp_path_factory: pytest.TempPathFactory):
-    from src.config import settings, constants
+    from src.config import constants, settings
 
     """Sets up the database for testing, and running latest migrations."""
     settings.database_url = f"sqlite:///{tmp_path_factory.mktemp('data')}/test.db"
 
     # Run alemibic migrations
-    alembic_cfg = Config(constants.PROJECT_PATH  / "alembic.ini")
+    alembic_cfg = Config(constants.PROJECT_PATH / "alembic.ini")
     alembic_cfg.set_main_option("script_location", str(constants.PROJECT_PATH / "alembic"))
     command.upgrade(alembic_cfg, "head")
-    
+
     from src.database import database
+
     database.engine = create_engine(settings.database_url)
     database.db = next(database._get_db())
-    
 
 
 @pytest.fixture(autouse=True, scope="session")
