@@ -47,4 +47,3 @@ def test_user_dict_method():
     user = User(name=name)
     user = user.dict()
     assert user["name"] == name
-        
