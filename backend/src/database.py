@@ -76,6 +76,7 @@ class Database:
             return None
 
         logger.debug("Found row {} for query, returning first", cursor.rowcount)
+        db.close()
         return cursor.first()
 
     def fetch_all(self, query: Select | Insert | Update) -> list[Model] | None:
@@ -98,6 +99,7 @@ class Database:
             return None
 
         logger.debug("Found rows {} for query, returning all", cursor.rowcount)
+        db.close()
         return cursor.all()
 
     def execute(self, query: Insert | Update) -> None:
@@ -110,6 +112,7 @@ class Database:
 
         db.execute(query)
         db.commit()
+        db.close()
 
     def add(self, model_list: Model | list[Model]) -> list[Model]:
         """Add one or more objects to the database.
@@ -131,7 +134,7 @@ class Database:
         logger.info("Adding {} objects to database", len(model_list))
         db.add_all(model_list)
         db.commit()
-        db.refresh(model_list)
+        db.close()
         return model_list
 
 
