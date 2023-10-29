@@ -1,10 +1,10 @@
 """Database module."""
 from typing import Generator, TypeVar
 
+from loguru import logger
 from sqlalchemy import CursorResult, Insert, Select, Update, create_engine
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, as_declarative, sessionmaker
-from loguru import logger
 
 from src.config import settings
 
