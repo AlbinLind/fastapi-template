@@ -39,3 +39,12 @@ def test_getting_multiple_clients(client: TestClient, db: Session):
     req = client.get("/users/", params={"limit": 2})
     assert req.status_code == 200
     assert len(req.json()) == 2
+
+
+def test_user_dict_method():
+    """Tests the user dict method."""
+    name = generate_random_string()
+    user = User(name=name)
+    user = user.dict()
+    assert user["name"] == name
+        
