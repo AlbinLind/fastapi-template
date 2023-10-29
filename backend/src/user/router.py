@@ -10,7 +10,7 @@ router = APIRouter()
 
 
 @router.get("/")
-def get_all_user(limit: int = 30, offset: int = 30) -> list[UserBase]:
+def get_all_user(limit: int = 30, offset: int = 0) -> list[UserBase]:
     """Get all users that are in the database."""
     query = select(User).offset(offset).limit(limit)
     return database.fetch_all(query)
