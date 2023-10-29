@@ -2,15 +2,15 @@
 from typing import Generator, TypeVar
 
 from loguru import logger
-from sqlalchemy import CursorResult, Insert, Select, Update, create_engine
+from sqlalchemy import Result, Insert, Select, Update, create_engine
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import Session, DeclarativeBase, sessionmaker
+from sqlalchemy.orm import Session, as_declarative, sessionmaker
 
 from src.config import settings
 
 
-
-class Base(DeclarativeBase):
+@as_declarative()
+class Base:
     """Base class for all the models."""
 
     id: int
@@ -42,15 +42,16 @@ class Database:
         self.database_url = database_url
         logger.debug("Connecting to database at {}", self.database_url)
         self.engine = create_engine(self.database_url)
-        self.session_local = sessionmaker(autocommit=False, bind=self.engine)
-
-    def get_db(self) -> Generator[Session, None, None]:
+        self.db = next(self._get_db())
+        
+    def _get_db(self) -> Generator[Session, None, None]:
         """Get a database session.
 
         Yields:
             Generator[Session, None, None]: Database session
         """
-        db = self.session_local()
+        db = sessionmaker(self.engine)()
+        logger.info("Created a session, you should not see this after initialisation.")
         try:
             yield db
         finally:
@@ -64,20 +65,13 @@ class Database:
 
         Returns:
             Model | None: object of the model or none if no row is found
-        """
-        db = self.session_local()
+        """   
 
         logger.debug("Executing query {} for one object", query)
-        cursor: CursorResult = db.execute(query)
-        db.commit()
-
-        if cursor.rowcount == 0:
-            logger.info("No row found for query {}", query)
-            return None
-
-        logger.debug("Found row {} for query, returning first", cursor.rowcount)
-        db.close()
-        return cursor.first()
+        result: Result = self.db.execute(query).first()
+        self.db.commit()
+        
+        return result[0]
 
     def fetch_all(self, query: Select | Insert | Update) -> list[Model] | None:
         """Fetches all the rows from the database.
@@ -88,19 +82,12 @@ class Database:
         Returns:
             list[Model] | None: list of objects of the model or none if no row is found
         """
-        db = self.session_local()
-
         logger.debug("Executing query {} for all objects", query)
-        cursor: CursorResult = db.execute(query)
+        result: Result = self.db.execute(query).all()
+        self.db.commit()
 
-        db.commit()
-        if cursor.rowcount == 0:
-            logger.info("No row found for query {}", query)
-            return None
-
-        logger.debug("Found rows {} for query, returning all", cursor.rowcount)
-        db.close()
-        return cursor.all()
+        # The result is a sequenced tuple like object, but we only want the first part of the tuple
+        return [res[0] for res in result]
 
     def execute(self, query: Insert | Update) -> None:
         """Executes the query, but does not fetch any rows.
@@ -108,11 +95,9 @@ class Database:
         Args:
             query (Insert | Update): query to execute
         """
-        db = self.session_local()
-
-        db.execute(query)
-        db.commit()
-        db.close()
+        logger.debug("Executing query {}", query)
+        self.db.execute(query)
+        self.db.commit()
 
     def add(self, model_list: Model | list[Model]) -> None:
         """Add one or more objects to the database.
@@ -125,12 +110,9 @@ class Database:
             logger.debug("Converting single model to list")
             model_list = [model_list]
 
-        db = self.session_local()
-
         logger.info("Adding {} objects to database", len(model_list))
-        db.add_all(model_list)
-        db.commit()
-        db.close()
+        self.db.add_all(model_list)
+        self.db.commit()
 
 
 database = Database()
