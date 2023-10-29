@@ -4,6 +4,7 @@ from typing import Generator, TypeVar
 from sqlalchemy import CursorResult, Insert, Select, Update, create_engine
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, as_declarative, sessionmaker
+from loguru import logger
 
 from src.config import settings
 
@@ -39,6 +40,7 @@ class Database:
     def __init__(self, database_url: str = settings.database_url) -> None:
         """Initializes the database."""
         self.database_url = database_url
+        logger.debug("Connecting to database at {}", self.database_url)
         self.engine = create_engine(self.database_url)
         self.session_local = sessionmaker(autocommit=False, bind=self.engine)
 
@@ -65,10 +67,15 @@ class Database:
         """
         db = self.session_local()
 
+        logger.debug("Executing query {} for one object", query)
         cursor: CursorResult = db.execute(query)
         db.commit()
+
         if cursor.rowcount == 0:
+            logger.info("No row found for query {}", query)
             return None
+
+        logger.debug("Found row {} for query, returning first", cursor.rowcount)
         return cursor.first()
 
     def fetch_all(self, query: Select | Insert | Update) -> list[Model] | None:
@@ -82,11 +89,15 @@ class Database:
         """
         db = self.session_local()
 
+        logger.debug("Executing query {} for all objects", query)
         cursor: CursorResult = db.execute(query)
 
         db.commit()
         if cursor.rowcount == 0:
+            logger.info("No row found for query {}", query)
             return None
+
+        logger.debug("Found rows {} for query, returning all", cursor.rowcount)
         return cursor.all()
 
     def execute(self, query: Insert | Update) -> None:
@@ -96,6 +107,7 @@ class Database:
             query (Insert | Update): query to execute
         """
         db = self.session_local()
+
         db.execute(query)
         db.commit()
 
@@ -111,8 +123,12 @@ class Database:
         """
         # If we get a single model, convert it to a list
         if not isinstance(model_list, list):
+            logger.debug("Converting single model to list")
             model_list = [model_list]
+
         db = self.session_local()
+
+        logger.info("Adding {} objects to database", len(model_list))
         db.add_all(model_list)
         db.commit()
         db.refresh(model_list)
