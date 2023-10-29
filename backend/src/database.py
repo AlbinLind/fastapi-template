@@ -99,5 +99,24 @@ class Database:
         db.execute(query)
         db.commit()
 
+    def add(self, model_list: Model | list[Model]) -> list[Model]:
+        """Add one or more objects to the database.
+
+        Args:
+            model_list (Model | list[Model]): object or list of objects to add
+
+        Returns:
+            list[Model]: list of objects that were added, note that even if a single object
+            is added, it will be returned as a list.
+        """
+        # If we get a single model, convert it to a list
+        if not isinstance(model_list, list):
+            model_list = [model_list]
+        db = self.session_local()
+        db.add_all(model_list)
+        db.commit()
+        db.refresh(model_list)
+        return model_list
+
 
 database = Database()
