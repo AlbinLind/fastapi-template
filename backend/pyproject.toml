@@ -33,6 +33,8 @@ cov = "scripts.test_scripts:run_tests"
 test = "scripts.test_scripts:run_tests"
 github_coverage = "scripts.test_scripts:github_coverage"
 
+[tool.coverage.report]
+omit = ["tests/**", "alembic/**", "scripts/**"]
 
 [tool.coverage.run]
 dynamic_context = "test_function"
