@@ -4,13 +4,13 @@ from typing import Generator, TypeVar
 from loguru import logger
 from sqlalchemy import CursorResult, Insert, Select, Update, create_engine
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import Session, as_declarative, sessionmaker
+from sqlalchemy.orm import Session, DeclarativeBase, sessionmaker
 
 from src.config import settings
 
 
-@as_declarative()
-class Base:
+
+class Base(DeclarativeBase):
     """Base class for all the models."""
 
     id: int
@@ -114,15 +114,11 @@ class Database:
         db.commit()
         db.close()
 
-    def add(self, model_list: Model | list[Model]) -> list[Model]:
+    def add(self, model_list: Model | list[Model]) -> None:
         """Add one or more objects to the database.
 
         Args:
             model_list (Model | list[Model]): object or list of objects to add
-
-        Returns:
-            list[Model]: list of objects that were added, note that even if a single object
-            is added, it will be returned as a list.
         """
         # If we get a single model, convert it to a list
         if not isinstance(model_list, list):
@@ -135,7 +131,6 @@ class Database:
         db.add_all(model_list)
         db.commit()
         db.close()
-        return model_list
 
 
 database = Database()
