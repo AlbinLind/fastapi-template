@@ -46,5 +46,5 @@ settings = Settings()
 
 app_configs = {"title": settings.project_name, "version": settings.project_version}
 
-if not settings.environment.is_debug:  # pragma: no cover
+if settings.environment.is_production:  # pragma: no cover
     app_configs["openapi_url"] = None
