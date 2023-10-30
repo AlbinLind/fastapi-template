@@ -4,6 +4,9 @@ I created this template to have a quick start for my FastAPI projects. It is my 
 
 This project does **not** guarantee, nor does it try to say, that it is the best/only way to structure a FastAPI project. It is just my own personal preference, and I am open to suggestions and improvements.
 
+## Installing
+To install this template just take the following command `curl -L https://github.com/AlbinLind/fastapi-template/archive/refs/tags/<version-tag>.tar.gz | tar -xz` and **replace** `<version-tag>` with the latest tag, for example `v.0.3.0`.
+
 ## Features
 Some of the features that this template provides:
 - `poetry` for dependency management
