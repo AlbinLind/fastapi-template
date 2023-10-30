@@ -2,8 +2,12 @@ name: Run ruff linting
 
 on:
   push:
+    paths:
+     - "backend/**"
     branches: ["dev"]
   pull_request:
+    paths:
+     - "backend/**"
     branches: ["main"]
 
 permissions:
