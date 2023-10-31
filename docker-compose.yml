@@ -6,7 +6,15 @@ services:
       context: ./backend
       dockerfile: ../docker/Dockerfile.backend
     ports:
+       # The port that is exposed to your machine is before the colon
+       # The port after the colon is the internal port that it listens to
      - "8000:8000"
+    # You can persist your data by mounting it.
+    # Similar to the port you'll insert the "real" mounting point before the colon, 
+    # and the internal after it. Make sure that the internal mount point corresponds with
+    # the path in your app. The backend source code will be mounted under /app/
+    # volumes:
+      # - ./:/app
     environment:
       - ENVIRONMENT=production # set to development to enable debug mode
       - LOG_LEVEL=INFO # Set the general log level, more fine grained can also be set
